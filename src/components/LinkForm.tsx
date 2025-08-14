@@ -15,8 +15,6 @@ export default function LinkForm({ onSubmit, mode, initialData, onCancel }: Link
     description: '',
     tags: ''
   });
-  const [currentTag, setCurrentTag] = useState('');
-  const [tagSuggestions, setTagSuggestions] = useState<string[]>(['work', 'personal', 'research', 'tutorial']);
 
   useEffect(() => {
     if (mode === 'edit' && initialData) {
@@ -34,39 +32,15 @@ export default function LinkForm({ onSubmit, mode, initialData, onCancel }: Link
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleTagInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCurrentTag(e.target.value);
-  };
-
-  const handleAddTag = () => {
-    if (currentTag.trim() && !formData.tags.split(',').map(t => t.trim()).includes(currentTag.trim())) {
-      const newTags = formData.tags ? `${formData.tags}, ${currentTag.trim()}` : currentTag.trim();
-      setFormData(prev => ({ ...prev, tags: newTags }));
-      setCurrentTag('');
-    }
-  };
-
-  const handleTagKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleAddTag();
-    }
-  };
-
-  const handleRemoveTag = (tagToRemove: string) => {
-    const updatedTags = formData.tags
-      .split(',')
-      .map(tag => tag.trim())
-      .filter(tag => tag !== tagToRemove)
-      .join(', ');
-    setFormData(prev => ({ ...prev, tags: updatedTags }));
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit({
       ...formData,
-      tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
+      tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
+      ...(mode === 'edit' && initialData ? { 
+        id: initialData.id,
+        createdAt: initialData.createdAt 
+      } : {})
     });
     if (mode === 'create') {
       setFormData({
@@ -77,8 +51,6 @@ export default function LinkForm({ onSubmit, mode, initialData, onCancel }: Link
       });
     }
   };
-
-  const currentTags = formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
 
   return (
     <form className="link-form" onSubmit={handleSubmit}>
@@ -119,36 +91,14 @@ export default function LinkForm({ onSubmit, mode, initialData, onCancel }: Link
       </div>
       
       <div className="form-group">
-        <label>Tags</label>
-        <div className="tags-input-container">
-          <div className="tags-display">
-            {currentTags.map(tag => (
-              <span key={tag} className="tag">
-                {tag}
-                <button 
-                  type="button" 
-                  onClick={() => handleRemoveTag(tag)}
-                  className="tag-remove"
-                  aria-label={`Remove tag ${tag}`}
-                >
-                  ×
-                </button>
-              </span>
-            ))}
-          </div>
-          <div className="tag-input-wrapper">
-            <input
-              type="text"
-              value={currentTag}
-              onChange={handleTagInputChange}
-              onKeyDown={handleTagKeyDown}
-              placeholder="Add tags..."
-              className="tag-input"
-            />
-          
-          </div>
-
-        </div>
+        <label htmlFor="tags">Tags (comma separated)</label>
+        <input
+          type="text"
+          id="tags"
+          name="tags"
+          value={formData.tags}
+          onChange={handleChange}
+        />
       </div>
       
       <div className="form-actions">
