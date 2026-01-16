@@ -63,46 +63,67 @@ function App() {
   };
 
   return (
-    <div className="app-container">
-      <h1>Links Vault Application</h1>
-      
+  <div className="vault-layout">
+    {/* Top Bar */}
+    <header className="vault-header">
+      <h1>🔗 LinkVault</h1>
+      <p>Save, search and organize your important links</p>
+    </header>
+
+    {/* Search */}
+    <div className="vault-search">
       <SearchBar 
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         onSearch={handleSearch}
         isSearching={isSearching}
       />
-      
-      <LinkForm 
-        onSubmit={handleFormSubmit}
-        mode={formMode}
-        initialData={currentLink}
-        onCancel={() => {
-          setFormMode('create');
-          setCurrentLink(null);
-        }}
-      />
-      
-      <div className="links-grid">
-        {filteredLinks.map(link => (
-          <LinkCard
-            key={link.id}
-            link={link}
-            onEdit={() => {
-              setCurrentLink(link);
-              setFormMode('edit');
-            }}
-            onDelete={() => handleDeleteLink(link.id)}
-          />
-        ))}
-      </div>
-      
-      <Notification 
-        show={notification.show} 
-        message={notification.message} 
-      />
     </div>
-  );
+
+    {/* Main Grid */}
+    <div className="vault-main">
+      {/* Left: Form */}
+      <div className="vault-form">
+        <h3>{formMode === "edit" ? "Edit Link" : "Add New Link"}</h3>
+        <LinkForm 
+          onSubmit={handleFormSubmit}
+          mode={formMode}
+          initialData={currentLink}
+          onCancel={() => {
+            setFormMode("create");
+            setCurrentLink(null);
+          }}
+        />
+      </div>
+
+      {/* Right: Links */}
+      <div className="vault-links">
+        {filteredLinks.length === 0 ? (
+          <p className="empty-state">No links found</p>
+        ) : (
+          <div className="links-grid">
+            {filteredLinks.map(link => (
+              <LinkCard
+                key={link.id}
+                link={link}
+                onEdit={() => {
+                  setCurrentLink(link);
+                  setFormMode("edit");
+                }}
+                onDelete={() => handleDeleteLink(link.id)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+
+    <Notification 
+      show={notification.show} 
+      message={notification.message} 
+    />
+  </div>
+);
 }
 
 export default App;

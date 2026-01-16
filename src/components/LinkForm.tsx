@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { LinkItem, LinkFormMode, LinkFormSubmitHandler } from '../types/types';
+import { useState, useEffect } from "react";
+import { LinkItem, LinkFormMode, LinkFormSubmitHandler } from "../types/types";
 
 interface LinkFormProps {
   onSubmit: LinkFormSubmitHandler;
@@ -8,104 +8,126 @@ interface LinkFormProps {
   onCancel: () => void;
 }
 
-export default function LinkForm({ onSubmit, mode, initialData, onCancel }: LinkFormProps) {
-  const [formData, setFormData] = useState({
-    title: '',
-    url: '',
-    description: '',
-    tags: ''
-  });
+export default function LinkForm({
+  onSubmit,
+  mode,
+  initialData,
+  onCancel
+}: LinkFormProps) {
+  const [title, setTitle] = useState("");
+  const [url, setUrl] = useState("");
+  const [description, setDescription] = useState("");
+  const [tagInput, setTagInput] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
 
   useEffect(() => {
-    if (mode === 'edit' && initialData) {
-      setFormData({
-        title: initialData.title,
-        url: initialData.url,
-        description: initialData.description,
-        tags: initialData.tags.join(', ')
-      });
+    if (mode === "edit" && initialData) {
+      setTitle(initialData.title);
+      setUrl(initialData.url);
+      setDescription(initialData.description);
+      setTags(initialData.tags);
     }
   }, [mode, initialData]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+  const addTag = () => {
+    if (tagInput.trim() && !tags.includes(tagInput.trim())) {
+      setTags([...tags, tagInput.trim()]);
+      setTagInput("");
+    }
+  };
+
+  const removeTag = (tag: string) => {
+    setTags(tags.filter(t => t !== tag));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({
-      ...formData,
-      tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
-      ...(mode === 'edit' && initialData ? { 
-        id: initialData.id,
-        createdAt: initialData.createdAt 
-      } : {})
-    });
-    if (mode === 'create') {
-      setFormData({
-        title: '',
-        url: '',
-        description: '',
-        tags: ''
-      });
+
+    const data: any = {
+      title,
+      url,
+      description,
+      tags
+    };
+
+    if (mode === "edit" && initialData) {
+      data.id = initialData.id;
+      data.createdAt = initialData.createdAt;
+    }
+
+    onSubmit(data);
+
+    if (mode === "create") {
+      setTitle("");
+      setUrl("");
+      setDescription("");
+      setTags([]);
+      setTagInput("");
     }
   };
 
   return (
     <form className="link-form" onSubmit={handleSubmit}>
-      <h2>{mode === 'create' ? 'Add New Link' : 'Edit Link'}</h2>
-      
+      <h2>{mode === "create" ? "Add New Link" : "Edit Link"}</h2>
+
       <div className="form-group">
-        <label htmlFor="title">Title</label>
-        <input
-          type="text"
-          id="title"
-          name="title"
-          value={formData.title}
-          onChange={handleChange}
-          required
-        />
+        <label>Title</label>
+        <input value={title} onChange={e => setTitle(e.target.value)} required />
       </div>
-      
+
       <div className="form-group">
-        <label htmlFor="url">URL</label>
-        <input
-          type="url"
-          id="url"
-          name="url"
-          value={formData.url}
-          onChange={handleChange}
-          required
-        />
+        <label>URL</label>
+        <input value={url} onChange={e => setUrl(e.target.value)} required />
       </div>
-      
+
       <div className="form-group">
-        <label htmlFor="description">Description</label>
+        <label>Description</label>
         <textarea
-          id="description"
-          name="description"
-          value={formData.description}
-          onChange={handleChange}
+          className="description"
+          value={description}
+          onChange={e => setDescription(e.target.value)}
         />
       </div>
-      
+
+      {/* Tags */}
       <div className="form-group">
-        <label htmlFor="tags">Tags (comma separated)</label>
+        <label>Tags</label>
+
+        <div className="tags-display">
+          {tags.map(tag => (
+            <span key={tag} className="tag">
+              {tag}
+              <button
+                type="button"
+                className="tag-remove"
+                onClick={() => removeTag(tag)}
+              >
+                ×
+              </button>
+            </span>
+          ))}
+        </div>
+
         <input
-          type="text"
-          id="tags"
-          name="tags"
-          value={formData.tags}
-          onChange={handleChange}
+          className="tag-input"
+          placeholder="Type a tag and press Enter"
+          value={tagInput}
+          onChange={e => setTagInput(e.target.value)}
+          onKeyDown={e => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              addTag();
+            }
+          }}
         />
       </div>
-      
+
       <div className="form-actions">
         <button type="submit">
-          {mode === 'create' ? 'Add Link' : 'Update Link'}
+          {mode === "create" ? "Add Link" : "Update Link"}
         </button>
-        {mode === 'edit' && (
+
+        {mode === "edit" && (
           <button type="button" onClick={onCancel}>
             Cancel
           </button>
