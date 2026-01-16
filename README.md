@@ -1,5 +1,3 @@
----
-
 # 🔗 Link Vault
 
 Link Vault is a simple and intuitive **React-based web application** for saving, managing, and organizing your favorite links using tags. It provides a clean, modern dashboard-style interface that makes it easy to store, search, and manage important links in one place.
